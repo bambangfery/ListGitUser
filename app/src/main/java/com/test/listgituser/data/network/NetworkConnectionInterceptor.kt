@@ -3,9 +3,12 @@ package com.test.listgituser.data.network
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.NetworkInfo
+import android.os.Build
 import com.test.listgituser.util.NoInternetException
 import okhttp3.Interceptor
 import okhttp3.Response
+
 
 class NetworkConnectionInterceptor(
     context: Context
@@ -20,16 +23,43 @@ class NetworkConnectionInterceptor(
         return chain.proceed(chain.request())
     }
 
+    @Suppress("UNREACHABLE_CODE")
     private fun isInternetAvailable(): Boolean {
         var result = false
         val connectivityManager =
             applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
         connectivityManager?.let {
-            it.getNetworkCapabilities(connectivityManager.activeNetwork)?.apply {
-                result = when {
-                    hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-                    hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-                    else -> false
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    it.getNetworkCapabilities(connectivityManager.activeNetwork)?.apply {
+                        result = when {
+                            hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                            hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                            else -> false
+                        }
+                    }
+                } else {
+                    TODO("VERSION.SDK_INT < M")
+                    it?.run {
+                        it.activeNetworkInfo?.run {
+                            result = when (type) {
+                                ConnectivityManager.TYPE_WIFI -> true
+                                ConnectivityManager.TYPE_MOBILE -> true
+                                else -> false
+                            }
+                        }
+                    }
+                }
+            } else {
+                TODO("VERSION.SDK_INT < LOLLIPOP")
+                it?.run {
+                    it.activeNetworkInfo?.run {
+                        result = when (type) {
+                            ConnectivityManager.TYPE_WIFI -> true
+                            ConnectivityManager.TYPE_MOBILE -> true
+                            else -> false
+                        }
+                    }
                 }
             }
         }

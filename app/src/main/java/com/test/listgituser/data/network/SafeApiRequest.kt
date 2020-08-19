@@ -2,6 +2,7 @@ package com.test.listgituser.data.network
 
 import com.test.listgituser.util.ApiException
 import org.json.JSONException
+import org.json.JSONObject
 import retrofit2.Response
 
 abstract class SafeApiRequest {
@@ -15,11 +16,9 @@ abstract class SafeApiRequest {
             val message = StringBuilder()
             error?.let{
                 try{
-                    message.append(it)
+                    message.append(JSONObject(it).getString("message"))
                 }catch(e: JSONException){ }
-                message.append("\n")
             }
-            message.append("Error Code: ${response.code()}")
             throw ApiException(message.toString())
         }
     }

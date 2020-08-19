@@ -1,20 +1,23 @@
 package com.test.listgituser.ui.search
 
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.test.listgituser.R
-import com.test.listgituser.data.pojo.Items
-import com.test.listgituser.databinding.ActivitySearchBinding
-import com.test.listgituser.util.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
+import androidx.lifecycle.*
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.test.listgituser.data.pojo.Items
+import com.test.listgituser.databinding.ActivitySearchBinding
+import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.ViewHolder
+import com.test.listgituser.R
+import com.test.listgituser.util.*
 
 class SearchActivity : AppCompatActivity(), KodeinAware {
 
@@ -24,6 +27,7 @@ class SearchActivity : AppCompatActivity(), KodeinAware {
     private lateinit var binding : ActivitySearchBinding
     private lateinit var viewModel: SearchViewModel
     private lateinit var scrollListener: RecyclerViewLoadMoreScroll
+    private lateinit var mAdapter: GroupAdapter<ViewHolder>
     private lateinit var mLayoutManager: RecyclerView.LayoutManager
     private lateinit var adapterLinear: SearchItemsAdapter
     private lateinit var loadMoreItemsCells: ArrayList<Items?>
@@ -59,6 +63,13 @@ class SearchActivity : AppCompatActivity(), KodeinAware {
 
                 } catch (e: ApiException) {
                     e.printStackTrace()
+                    if (e.message.toString().contains("API rate limit exceeded"))
+                        Toast.makeText(
+                            this
+                            , "Sorry, API rate limit exceeded. Please wait 1 minute " +
+                                    "and request again"
+                            , Toast.LENGTH_LONG
+                        ).show()
                 } catch (e: NoInternetException) {
                     e.printStackTrace()
                 }
@@ -66,6 +77,8 @@ class SearchActivity : AppCompatActivity(), KodeinAware {
             }
         }
     }
+
+
 
     private fun initRecyclerView(searchItem: ArrayList<Items?>) {
         adapterLinear = SearchItemsAdapter(searchItem)
